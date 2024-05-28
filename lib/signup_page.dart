@@ -1,8 +1,11 @@
 import 'dart:io';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:social_media/services/auth_services.dart';
 import 'package:social_media/signin_page.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -14,6 +17,7 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final _formkey = GlobalKey<FormState>();
   File? _image;
+  final _auth = AuthService();
 
   TextEditingController nameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
@@ -24,12 +28,34 @@ class _SignUpPageState extends State<SignUpPage> {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
+    String fileName = basename(image!.path);
+
     setState(() {
       if (image != null) {
         _image = File(image.path);
         print(_image);
       }
     });
+  }
+
+  signUp(){
+    _auth
+        .createUserWithEmailAndPassword(
+      email: emailController.text,
+      password: passwordController.text,
+      name: nameController.text,
+      userName: usernameController.text,
+      file: _image!
+    ).then((_) {
+      emailController.clear();
+      passwordController.clear();
+      nameController.clear();
+      usernameController.clear();
+    }).catchError((e)=>print(e));
+  }
+
+  uploadImage(){
+   
   }
 
   @override
@@ -81,7 +107,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           controller: nameController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
@@ -90,7 +117,8 @@ class _SignUpPageState extends State<SignUpPage> {
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(color: Color(0xffeeeeee)),
                             ),
                           ),
@@ -106,7 +134,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           controller: usernameController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
@@ -115,7 +144,8 @@ class _SignUpPageState extends State<SignUpPage> {
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(color: Color(0xffeeeeee)),
                             ),
                           ),
@@ -131,7 +161,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           controller: emailController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
@@ -140,7 +171,8 @@ class _SignUpPageState extends State<SignUpPage> {
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(color: Color(0xffeeeeee)),
                             ),
                           ),
@@ -148,19 +180,19 @@ class _SignUpPageState extends State<SignUpPage> {
                         const SizedBox(height: 20),
                         TextFormField(
                           validator: (value) {
-                            if (value == null || value.isEmpty ) {
+                            if (value == null || value.isEmpty) {
                               return 'Please enter your password';
                             }
-                            if(value.length < 6){
+                            if (value.length < 6) {
                               return 'Password must be at least 6 characters';
                             }
                             return null;
-                          
                           },
                           controller: passwordController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
@@ -169,7 +201,8 @@ class _SignUpPageState extends State<SignUpPage> {
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                               borderSide: BorderSide(color: Color(0xffeeeeee)),
                             ),
                           ),
@@ -186,14 +219,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                           onPressed: () {
                             if (_formkey.currentState!.validate()) {
-                              print(nameController.text);
-                              print(usernameController.text);
-                              print(emailController.text);
-                              print(passwordController.text);
-                              nameController.clear();
-                              usernameController.clear();
-                              emailController.clear();
-                              passwordController.clear();
+                              signUp();
                             }
                           },
                           child: const Text(
@@ -223,8 +249,8 @@ class _SignUpPageState extends State<SignUpPage> {
                         },
                         child: const Text(
                           "Sign in",
-                          style:
-                              TextStyle(color: Color.fromARGB(255, 45, 210, 90)),
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 45, 210, 90)),
                         ))
                   ],
                 ),
@@ -236,3 +262,4 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 }
+
