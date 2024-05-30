@@ -1,10 +1,8 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_media/services/auth_services.dart';
 import 'package:social_media/signin_page.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -61,27 +59,28 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: SizedBox(
             height: MediaQuery.of(context).size.height,
             child: Column(
-              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
                   'Sign Up',
-                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 40,fontFamily: 'Poppins', fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 10),
                 const Text(
                   'Lets create your account',
                   style: TextStyle(
                     fontSize: 14,
+                    fontFamily: 'Poppins',
                     fontWeight: FontWeight.w400,
                     color: Color.fromARGB(1000, 74, 74, 74),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 Form(
                   key: _formkey,
                   child: Padding(
@@ -104,6 +103,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             }
                             return null;
                           },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: nameController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
@@ -113,7 +113,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
                             label: Text('Name'),
-                            labelStyle: TextStyle(color: Color(0xffC4C3C3)),
+                            labelStyle: TextStyle(color: Color(0xffC4C3C3),fontFamily: 'Poppins'),
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
@@ -131,6 +131,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             }
                             return null;
                           },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: usernameController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
@@ -140,7 +141,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
                             label: Text('Username'),
-                            labelStyle: TextStyle(color: Color(0xffC4C3C3)),
+                            labelStyle: TextStyle(color: Color(0xffC4C3C3),fontFamily: 'Poppins'),
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
@@ -158,6 +159,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             }
                             return null;
                           },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: emailController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
@@ -167,7 +169,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
                             label: Text('Email address'),
-                            labelStyle: TextStyle(color: Color(0xffC4C3C3)),
+                            labelStyle: TextStyle(color: Color(0xffC4C3C3),fontFamily: 'Poppins'),
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
@@ -188,6 +190,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             }
                             return null;
                           },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: passwordController,
                           decoration: const InputDecoration(
                             focusedBorder: OutlineInputBorder(
@@ -197,7 +200,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   color: Color.fromARGB(255, 45, 210, 90)),
                             ),
                             label: Text('Password'),
-                            labelStyle: TextStyle(color: Color(0xffC4C3C3)),
+                            labelStyle: TextStyle(color: Color(0xffC4C3C3),fontFamily: 'Poppins'),
                             floatingLabelStyle:
                                 TextStyle(color: Color(0xff4DD969)),
                             enabledBorder: OutlineInputBorder(
@@ -207,7 +210,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 50),
+                        const SizedBox(height: 40),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
@@ -226,6 +229,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             'Sign Up',
                             style: TextStyle(
                                 fontSize: 14,
+                                fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white),
                           ),
@@ -239,10 +243,10 @@ class _SignUpPageState extends State<SignUpPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have account? "),
+                    const Text("Already have account? ",style: TextStyle(fontFamily: 'Poppins'),),
                     InkWell(
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const SignInPage()));
@@ -250,6 +254,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: const Text(
                           "Sign in",
                           style: TextStyle(
+                              fontFamily: 'Poppins',
                               color: Color.fromARGB(255, 45, 210, 90)),
                         ))
                   ],

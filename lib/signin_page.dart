@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:social_media/home_page.dart';
+import 'package:social_media/main.dart';
 import 'package:social_media/services/auth_services.dart';
 import 'package:social_media/signup_page.dart';
 
@@ -14,7 +15,7 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final _formkey = GlobalKey<FormState>();
 
-  final AuthService _auth = AuthService();
+  final _auth = locator<AuthService>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
@@ -41,18 +42,11 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-            // style: ButtonStyle(backgroundColor: const MaterialStatePropertyAll(Color.fromARGB(255, 45, 210, 90)),
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            }),
-      ),
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            // crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Text(
                 'Hello Again!',
@@ -81,6 +75,7 @@ class _SignInPageState extends State<SignInPage> {
                             }
                             return null;
                           },
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: emailController,
                         decoration: const InputDecoration(
                           focusedBorder: OutlineInputBorder(
@@ -110,6 +105,7 @@ class _SignInPageState extends State<SignInPage> {
                             }
                             return null;
                           },
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: passwordController,
                         decoration: const InputDecoration(
                           focusedBorder: OutlineInputBorder(
@@ -166,14 +162,15 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 ),
               ),
-              const Expanded(flex: 1, child: SizedBox()),
+              const SizedBox(height: 50),
+              // const Expanded(flex: 1, child: SizedBox()),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Don’t have account? Let’s "),
                   InkWell(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpPage()));
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SignUpPage()));
                     },
                     child:
                         const Text("Sign up", style: TextStyle(color: Color.fromARGB(255, 45, 210, 90)),
