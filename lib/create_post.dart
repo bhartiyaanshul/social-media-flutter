@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +20,7 @@ class _CreatePostState extends State<CreatePost> {
 
   @override
   Widget build(BuildContext context) {
-    uploadImage() async {
+    uploadImageGallary() async {
       final picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
@@ -30,7 +31,60 @@ class _CreatePostState extends State<CreatePost> {
           _image = File(image.path);
           print(_image);
         }
+        else{
+          print('No image selected.');
+        }
       });
+    }
+
+    uploadImageCamera() async {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+      String fileName = basename(image!.path);
+
+      setState(() {
+        if (image != null) {
+          _image = File(image.path);
+          print(_image);
+        }
+        else{
+          print('No image selected.');
+        }
+      });
+    }
+
+    uploadImageDialog(){
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Center(child: Text('Upload Image')),
+            content: SizedBox(
+              height: 50,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        uploadImageGallary().then((value) => Navigator.pop(context));
+                      },
+                      child: const Text('Gallery'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        uploadImageCamera();
+                      },
+                      child: const Text('Camera'),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      );
     }
 
     return Scaffold(
@@ -106,9 +160,23 @@ class _CreatePostState extends State<CreatePost> {
                     const SizedBox(
                       height: 20,
                     ),
+                    Container(
+
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 45, 210, 90),
+                        ),
+                      ),
+                      child: _image == null
+                          ? const Center(
+                              child: Text('No Image Selected'),
+                            )
+                          : Image.file(_image!),
+                    ),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        uploadImage();
+                        uploadImageDialog();
                       },
                       child: const Text('Upload Image'),
                     ),
@@ -116,7 +184,7 @@ class _CreatePostState extends State<CreatePost> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 45, 210, 90),
-                        minimumSize: const Size(380, 60),
+                        // minimumSize: const (380, 60),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
