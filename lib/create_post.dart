@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:social_media/main.dart';
-import 'package:social_media/services/auth_services.dart';
 import 'package:social_media/services/storage_services.dart';
 
 class CreatePost extends StatefulWidget {
@@ -24,8 +23,7 @@ class _CreatePostState extends State<CreatePost> {
   final _store = locator<StorageServices>();
   final user = FirebaseAuth.instance.currentUser;
 
-  @override
-  Widget build(BuildContext context) {
+  
     uploadImageGallary() async {
       final picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -71,39 +69,41 @@ class _CreatePostState extends State<CreatePost> {
       }).catchError((e)=>print(e));
     }
 
-    uploadImageDialog() {
+    uploadImageDialog(BuildContext context) {
       showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Center(child: Text('Upload Image')),
-              content: SizedBox(
-                height: 50,
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          uploadImageGallary()
-                              .then((value) => Navigator.pop(context));
-                        },
-                        child: const Text('Gallery'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          uploadImageCamera();
-                        },
-                        child: const Text('Camera'),
-                      )
-                    ],
-                  ),
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Center(child: Text('Upload Image')),
+            content: SizedBox(
+              height: 50,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        uploadImageGallary()
+                            .then((value) => Navigator.pop(context));
+                      },
+                      child: const Text('Gallery'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        uploadImageCamera();
+                      },
+                      child: const Text('Camera'),
+                    )
+                  ],
                 ),
               ),
-            );
-          });
+            ),
+          );
+        });
     }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
@@ -177,7 +177,7 @@ class _CreatePostState extends State<CreatePost> {
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () {
-                          uploadImageDialog();
+                          uploadImageDialog(context);
                         },
                         child: const Text('Upload Image'),
                       ),
