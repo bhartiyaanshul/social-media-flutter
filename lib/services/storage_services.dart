@@ -27,21 +27,16 @@ class StorageServices{
     print(fileName);
     try {
     Reference ref = _storage.ref().child("postPicture/${fileName}");
-    UploadTask uploadImage = ref.putData(await file.readAsBytes());
-    uploadImage.snapshotEvents.listen((event) {
-      print(event.state);
-    });
+    UploadTask uploadImage = ref.putFile(file);
     TaskSnapshot snapshot = await uploadImage.whenComplete(() => null);
-    print("Test 2");
     String downloadUrl = await snapshot.ref.getDownloadURL();
-    print(downloadUrl);
     return downloadUrl;
     } catch (e) {
       print(e.toString());
     }
   }
 
-  final userCollectionRef = FirebaseFirestore.instance.collection("posts");
+  final postCollectionRef = FirebaseFirestore.instance.collection("posts");
 
   Future<void> createPost({
     required String title,
@@ -50,17 +45,24 @@ class StorageServices{
     required File file,
   }) async {
     try{
-      String? imageUrl = await uploadPostPicture('$user.png', file);
-      await userCollectionRef.add({
+      final postDocRef = postCollectionRef.doc();
+      String? imageUrl = await uploadPostPicture('${postDocRef.id}.png', file);
+      final post = await postDocRef.set({
         'title': title,
         'description': description,
         'createdBy': user,
-        'profileImage': imageUrl,
+        'postImage': imageUrl,
+        'id': postDocRef.id,
         'createdAt': Timestamp.now()
       });
     }
     catch(e){
       print(e);
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getPosts() async {
+    final docRef = await postCollectionRef.get();
+    return docRef.docs.map((doc) => {...doc.data()}).toList();
   }
 }

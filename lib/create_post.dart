@@ -67,6 +67,7 @@ class _CreatePostState extends State<CreatePost> {
       ).then((_) => {
         titleController.clear(),
         descController.clear(),
+        
       }).catchError((e)=>print(e));
     }
 
@@ -104,6 +105,7 @@ class _CreatePostState extends State<CreatePost> {
     }
 
     return Scaffold(
+      appBar: AppBar(),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -124,12 +126,6 @@ class _CreatePostState extends State<CreatePost> {
                   child: Column(
                     children: [
                       TextFormField(
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter title';
-                          }
-                          return null;
-                        },
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: titleController,
                         decoration: const InputDecoration(
@@ -150,12 +146,6 @@ class _CreatePostState extends State<CreatePost> {
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter description';
-                          }
-                          return null;
-                        },
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                         controller: descController,
                         decoration: const InputDecoration(
@@ -178,14 +168,9 @@ class _CreatePostState extends State<CreatePost> {
                         height: 20,
                       ),
                       Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: const Color.fromARGB(255, 45, 210, 90),
-                          ),
-                        ),
                         child: _image == null
                             ? const Center(
-                                child: Text('No Image Selected'),
+                                child: Text('No Image Selected',style: TextStyle(color: Colors.red),),
                               )
                             : Image.file(_image!),
                       ),

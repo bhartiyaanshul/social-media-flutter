@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:social_media/create_post.dart';
 import 'package:social_media/main.dart';
 import 'package:social_media/services/auth_services.dart';
+import 'package:social_media/services/storage_services.dart';
 import 'package:social_media/signin_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,6 +16,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _auth = locator<AuthService>();
+  final _store = locator<StorageServices>();
+  List<Map<String, dynamic>> posts = [];
 
   uploadImage() async {
     final picker = ImagePicker();
@@ -62,6 +66,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  getPosts() async {
+    posts = await _store.getPosts();
+    setState(() {});
+    print(posts);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getPosts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,12 +96,34 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: const Center(
-        child: Text('Welcome to Home Page'),
+      body: Center(
+        child: ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            final post = posts[index];
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                tileColor: Colors.grey[200],
+                // trailing: post['postImage'] != null ? Image.network(post['postImage']) : null,
+                title: Column(
+                  children: [
+                    Text(post['title']),
+
+                    Text(post['description']),
+                  ],
+                ),
+                // subtitle: Text(post['description']),
+                leading: post['postImage'] != null ? Image.network(post['postImage']) : null,
+              ),
+            );
+          }
+        )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const CreatePost()));
+          // getPosts();
         },
         child: const Icon(Icons.add),
       )
