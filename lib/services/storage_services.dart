@@ -5,6 +5,9 @@ import 'dart:io';
 class StorageServices{
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
+  final postCollectionRef = FirebaseFirestore.instance.collection("posts");
+  final userCollectionRef = FirebaseFirestore.instance.collection("users");
+
   Future<String?> uploadProfilePicture(String fileName, File file) async {
     print(fileName);
     try {
@@ -36,7 +39,7 @@ class StorageServices{
     }
   }
 
-  final postCollectionRef = FirebaseFirestore.instance.collection("posts");
+
 
   Future<void> createPost({
     required String title,
@@ -64,5 +67,10 @@ class StorageServices{
   Future<List<Map<String, dynamic>>> getPosts() async {
     final docRef = await postCollectionRef.get();
     return docRef.docs.map((doc) => {...doc.data()}).toList();
+  }
+
+  Future<Map<String, dynamic>?> getUserDetails(String? id) async {
+    final docRef = await userCollectionRef.doc(id).get();
+    return docRef.data();
   }
 }
