@@ -1,3 +1,6 @@
+
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
@@ -8,17 +11,24 @@ class PostWidget extends StatelessWidget {
   final String? description;
   final String? image;
   final String? user;
-  PostWidget({super.key, this.description, this.image, this.user});
+  final String? postid;
+  final int? likes;
+  PostWidget({super.key, this.description, this.image, this.user, this.postid, this.likes});
+
 
   final _store = locator<StorageServices>();
+  final userId = FirebaseAuth.instance.currentUser!.uid;
+
 
   @override
   Widget build(BuildContext context) {
+    print(_store.isliked);
+    // print(likes);
     // print(user);
     return FutureBuilder(
         future: _store.getUserDetails(user),
         builder: (context, snapshot) {
-          print(snapshot.data?['name']);
+          // print(snapshot.data?['name']);
           if (snapshot.hasData) {
             return Container(
               width: double.infinity,
@@ -63,7 +73,7 @@ class PostWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(snapshot.data?['name']!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 5),
                           const Text('52 minute ago',
@@ -99,7 +109,7 @@ class PostWidget extends StatelessWidget {
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.network(image!, fit: BoxFit.fill))
-                        : const Center(child: const Text('No Image')),
+                        : const Center(child: Text('No Image')),
                   ),
                   const SizedBox(height: 22),
                   Text(description!,
@@ -118,13 +128,17 @@ class PostWidget extends StatelessWidget {
                       const Text('36'),
                       const Spacer(),
                       IconButton(
-                        onPressed: (){},
-                        icon: const Icon(
-                          Icons.favorite_border,
-                          color: Color(0xff0F393A)
-                        ),
+                        onPressed: (){
+                          print(postid);
+                          _store.likePost(userId: userId, postId: postid);
+                        },
+                        icon: _store.isliked == true
+                            ? const Icon(Icons.favorite, color: Colors.red)
+                            : const Icon(Icons.favorite_border, color: Color(0xff0F393A)),
                       ),
-                      const Text('85'),
+                      // Text(likes as String),
+                      Text(likes.toString()),
+                      // likes != null ? Text(likes.toString()) : const Text('0'),
                       const SizedBox(width: 15),
                       IconButton(
                         onPressed: (){},

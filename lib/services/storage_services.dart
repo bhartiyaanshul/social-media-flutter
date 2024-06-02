@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
@@ -7,6 +8,7 @@ class StorageServices{
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final postCollectionRef = FirebaseFirestore.instance.collection("posts");
   final userCollectionRef = FirebaseFirestore.instance.collection("users");
+  final userId = FirebaseAuth.instance.currentUser!.uid;
 
   Future<String?> uploadProfilePicture(String fileName, File file) async {
     print(fileName);
@@ -73,4 +75,52 @@ class StorageServices{
     final docRef = await userCollectionRef.doc(id).get();
     return docRef.data();
   }
+
+  Future<void> likePost({String? postId, String? userId}) async {
+    print('userid');
+    print(userId);
+    print(postId);
+    final postDocRef = postCollectionRef.doc(postId);
+    print(postDocRef);
+    final post = await postDocRef.get();
+    print(post);
+    if(post.data()?['likes'] != null){
+      print(post);
+      if(post.data()?['likes'].contains(userId)){
+        print(post);
+        await postDocRef.update({
+          'likes': FieldValue.arrayRemove([userId])
+        });
+      } else {
+        await postDocRef.update({
+          'likes': FieldValue.arrayUnion([userId])
+        });
+      }
+    } else {
+      await postDocRef.update({
+        'likes': [userId]
+      });
+    }
+  }
+
+  getLikes(String? postId) async {
+    final postDocRef = postCollectionRef.doc(postId);
+    final post = await postDocRef.get();
+    return post.data()?['likes'];
+  }
+
+  isliked(String? postId, String? userId) async {
+    final postDocRef = postCollectionRef.doc(postId);
+    final post = await postDocRef.get();
+    if(post.data()?['likes'] != null){
+      if(post.data()?['likes'].contains(userId)){
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
 }

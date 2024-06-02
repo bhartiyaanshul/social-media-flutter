@@ -75,6 +75,8 @@ class _HomePageState extends State<HomePage> {
                     description: post['description'],
                     image: post['postImage'],
                     user: post['createdBy'],
+                    postid: post['id'],
+                    likes: post['likes'] != null ? post['likes'].length : 0,
                   ),
                 );
               })),
