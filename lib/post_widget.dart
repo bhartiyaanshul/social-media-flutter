@@ -1,6 +1,5 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
@@ -13,8 +12,7 @@ class PostWidget extends StatefulWidget {
   final String? image;
   final String? user;
   final String? postid;
-  int? likes;
-  PostWidget({super.key, this.description, this.image, this.user, this.postid, this.likes});
+  PostWidget({super.key, this.description, this.image, this.user, this.postid});
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -23,36 +21,32 @@ class PostWidget extends StatefulWidget {
 class _PostWidgetState extends State<PostWidget> {
   final _store = locator<StorageServices>();
   bool _isLiked = false;
+  var likeCounts = 0;
 
   final userId = FirebaseAuth.instance.currentUser!.uid;
 
   getLike() async {
     final likebool = await _store.isliked(userId: userId, postId: widget.postid);
-    if(likebool){
-      _isLiked = true;
-    }
-    else{
-      _isLiked = false;
-    }
+    _isLiked = likebool ? true : false;
     print(likebool);
+  }
+
+  getLikeCounts() async {
+    likeCounts = await _store.likeCounts(widget.postid);
   }
 
   @override
   initState() {
-    // TODO: implement initState
     super.initState();
     getLike();
+    getLikeCounts();
   }
 
   @override
   Widget build(BuildContext context) {
-    // print(_store.isliked);
-    // print(likes);
-    // print(user);
     return FutureBuilder(
         future: _store.getUserDetails(widget.user),
         builder: (context, snapshot) {
-          // print(snapshot.data?['name']);
           if (snapshot.hasData) {
             return Container(
               width: double.infinity,
@@ -155,14 +149,15 @@ class _PostWidgetState extends State<PostWidget> {
                         onPressed: (){
                           print(widget.postid);
                           _store.likePost(userId: userId, postId: widget.postid);
+                          // _store.getLikes(widget.postid);
                           setState(() {
                             print(_isLiked);
                             if(!_isLiked){
                               _isLiked = true;
-                              widget.likes = widget.likes! + 1;
+                              likeCounts++;
                             } else {
                               _isLiked = false;
-                              widget.likes = widget.likes! - 1;
+                              likeCounts--;
                             }
                           });
                         },
@@ -174,6 +169,8 @@ class _PostWidgetState extends State<PostWidget> {
                       GestureDetector(
                         onTap: () {
                           showModalBottomSheet(context: context, builder: (context) {
+                            print('tedttsidc');
+                            // final likeding = _store.getLikes(widget.postid);
                             return Container(
                               width: double.infinity,
                               // height: 200,
@@ -184,39 +181,39 @@ class _PostWidgetState extends State<PostWidget> {
                                   children: [
                                     const Text('Likes',style: TextStyle(fontSize: 20),),
                                     const SizedBox(height: 10),
-                                    FutureBuilder(
-                                      future: _store.getLikes(widget.postid),
-                                      builder: (context,AsyncSnapshot<List> snapshot) {
-                                        print(snapshot.data); 
-                                        if (snapshot.hasData) {
-                                          // return SizedBox();
-                                          return ListView.builder(
-                                            shrinkWrap: true,
-                                            itemCount: snapshot.data?.length,
-                                            itemBuilder: (context, index) {
-                                              return ListTile(
-                                                leading: CircleAvatar(
-                                                  radius: 20,
-                                                  backgroundImage: snapshot.data![index]['profileImage'] != null
-                                                      ? Image.network(snapshot.data![index]['profileImage']).image
-                                                      : null,
-                                                ),
-                                                title: Text(snapshot.data![index]['name'])
-                                              );
-                                            },
-                                          );
-                                        } else {
-                                          return const Center(child: CircularProgressIndicator());
-                                        }
-                                      },
-                                    )
+                                    // FutureBuilder(
+                                    //   future: _store.getLikes(widget.postid),
+                                    //   builder: (context,AsyncSnapshot<List> snapshot) {
+                                    //     print(snapshot.data); 
+                                    //     if (snapshot.hasData) {
+                                    //       // return SizedBox();
+                                    //       return ListView.builder(
+                                    //         shrinkWrap: true,
+                                    //         itemCount: snapshot.data?.length,
+                                    //         itemBuilder: (context, index) {
+                                    //           return ListTile(
+                                    //             leading: CircleAvatar(
+                                    //               radius: 20,
+                                    //               backgroundImage: snapshot.data![index]['profileImage'] != null
+                                    //                   ? Image.network(snapshot.data![index]['profileImage']).image
+                                    //                   : null,
+                                    //             ),
+                                    //             title: Text(snapshot.data![index]['name'])
+                                    //           );
+                                    //         },
+                                    //       );
+                                    //     } else {
+                                    //       return const Center(child: CircularProgressIndicator());
+                                    //     }
+                                    //   },
+                                    // )
                                   ],
                                 ),
                               ),
                             );
                           });
                         },
-                        child: Text(widget.likes.toString())
+                        child: Text(likeCounts.toString())
                       ),
                       // likes != null ? Text(likes.toString()) : const Text('0'),
                       const SizedBox(width: 15),

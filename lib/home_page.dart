@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+
   @override
   void initState() {
     super.initState();
@@ -76,7 +77,6 @@ class _HomePageState extends State<HomePage> {
                     image: post['postImage'],
                     user: post['createdBy'],
                     postid: post['id'],
-                    likes: post['likes'] != null ? post['likes'].length : 0,
                   ),
                 );
               })),

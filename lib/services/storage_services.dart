@@ -41,8 +41,6 @@ class StorageServices{
     }
   }
 
-
-
   Future<void> createPost({
     required String title,
     required String description,
@@ -77,61 +75,50 @@ class StorageServices{
   }
 
   Future<void> likePost({String? postId, String? userId}) async {
-    print('userid');
-    print(userId);
-    print(postId);
-    final postDocRef = postCollectionRef.doc(postId);
-    print(postDocRef);
-    final post = await postDocRef.get();
-    print(post);
-    if(post.data()?['likes'] != null){
-      print(post);
-      if(post.data()?['likes'].contains(userId)){
-        print(post);
-        await postDocRef.update({
-          'likes': FieldValue.arrayRemove([userId])
-        });
-      } else {
-        await postDocRef.update({
-          'likes': FieldValue.arrayUnion([userId])
-        });
-      }
-    } else {
-      await postDocRef.update({
-        'likes': [userId]
+    final postLikeDocRef = postCollectionRef.doc(postId).collection('likes');
+    print(postLikeDocRef);
+    final getUserLike = await postLikeDocRef.doc(userId).get();
+    print('user');
+    print(getUserLike.exists);
+    if(!getUserLike.exists){
+      final like = await postLikeDocRef.doc(userId).set({
+        'userId': userId,
+        'createdAt': Timestamp.now(),
+        'updatedAt': Timestamp.now()
       });
+    }
+    else{
+      final delete = await postLikeDocRef.doc(userId).delete();
     }
   }
 
-  
-
-  Future<List> getLikes(String? postId) async {
-    List<Map<String, dynamic>> users = [];
-    final postDocRef = postCollectionRef.doc(postId);
-    final post = await postDocRef.get();
-    final ids = post.data()?['likes'];
-    print(ids);
-    for(var id in ids){
-      print(id);
-      final user = await userCollectionRef.doc(id).get();
-      users = [...users, user.data()!];
-      print(users);
-    }
-    return users;
+  Future<int> likeCounts(String? postId) async {
+    final postLikeDocRef = postCollectionRef.doc(postId).collection('likes');
+    final docRef = await postLikeDocRef.get();
+    final id = docRef.docs.map((doc) => doc.id).toList();
+    final likecounts = id.length;
+    return likecounts;
   }
 
   isliked({String? postId, String? userId}) async {
-    final postDocRef = postCollectionRef.doc(postId);
-    final post = await postDocRef.get();
-    if(post.data()?['likes'] != null){
-      if(post.data()?['likes'].contains(userId)){
-        return true;
-      } else {
-        return false;
-      }
+    final postLikeDocRef = postCollectionRef.doc(postId).collection('likes');
+    final getUserLike = await postLikeDocRef.doc(userId).get();
+    if(getUserLike.exists){
+      return true;
     } else {
       return false;
     }
+    // final postDocRef = postCollectionRef.doc(postId);
+    // final post = await postDocRef.get();
+    // if(post.data()?['likes'] != null){
+    //   if(post.data()?['likes'].contains(userId)){
+    //     return true;
+    //   } else {
+    //     return false;
+    //   }
+    // } else {
+    //   return false;
+    // }
   }
 
 }
