@@ -103,13 +103,24 @@ class StorageServices{
     }
   }
 
-  getLikes(String? postId) async {
+  
+
+  Future<List> getLikes(String? postId) async {
+    List<Map<String, dynamic>> users = [];
     final postDocRef = postCollectionRef.doc(postId);
     final post = await postDocRef.get();
-    return post.data()?['likes'];
+    final ids = post.data()?['likes'];
+    print(ids);
+    for(var id in ids){
+      print(id);
+      final user = await userCollectionRef.doc(id).get();
+      users = [...users, user.data()!];
+      print(users);
+    }
+    return users;
   }
 
-  isliked(String? postId, String? userId) async {
+  isliked({String? postId, String? userId}) async {
     final postDocRef = postCollectionRef.doc(postId);
     final post = await postDocRef.get();
     if(post.data()?['likes'] != null){

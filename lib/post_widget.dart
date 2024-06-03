@@ -1,32 +1,56 @@
 
-
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:social_media/main.dart';
 import 'package:social_media/services/storage_services.dart';
 
-class PostWidget extends StatelessWidget {
+class PostWidget extends StatefulWidget {
   final String? description;
   final String? image;
   final String? user;
   final String? postid;
-  final int? likes;
+  int? likes;
   PostWidget({super.key, this.description, this.image, this.user, this.postid, this.likes});
 
+  @override
+  State<PostWidget> createState() => _PostWidgetState();
+}
 
+class _PostWidgetState extends State<PostWidget> {
   final _store = locator<StorageServices>();
+  bool _isLiked = false;
+
   final userId = FirebaseAuth.instance.currentUser!.uid;
 
+  getLike() async {
+    final likebool = await _store.isliked(userId: userId, postId: widget.postid);
+    if(likebool){
+      _isLiked = true;
+    }
+    else{
+      _isLiked = false;
+    }
+    print(likebool);
+  }
+
+  @override
+  initState() {
+    // TODO: implement initState
+    super.initState();
+    getLike();
+  }
 
   @override
   Widget build(BuildContext context) {
-    print(_store.isliked);
+    // print(_store.isliked);
     // print(likes);
     // print(user);
     return FutureBuilder(
-        future: _store.getUserDetails(user),
+        future: _store.getUserDetails(widget.user),
         builder: (context, snapshot) {
           // print(snapshot.data?['name']);
           if (snapshot.hasData) {
@@ -105,14 +129,14 @@ class PostWidget extends StatelessWidget {
                       color: Colors.grey,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: image != null
+                    child: widget.image != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(image!, fit: BoxFit.fill))
+                            child: Image.network(widget.image!, fit: BoxFit.fill))
                         : const Center(child: Text('No Image')),
                   ),
                   const SizedBox(height: 22),
-                  Text(description!,
+                  Text(widget.description!,
                       style: const TextStyle(
                           fontSize: 12, color: Color(0xff919191))),
                   const SizedBox(height: 28),
@@ -129,15 +153,71 @@ class PostWidget extends StatelessWidget {
                       const Spacer(),
                       IconButton(
                         onPressed: (){
-                          print(postid);
-                          _store.likePost(userId: userId, postId: postid);
+                          print(widget.postid);
+                          _store.likePost(userId: userId, postId: widget.postid);
+                          setState(() {
+                            print(_isLiked);
+                            if(!_isLiked){
+                              _isLiked = true;
+                              widget.likes = widget.likes! + 1;
+                            } else {
+                              _isLiked = false;
+                              widget.likes = widget.likes! - 1;
+                            }
+                          });
                         },
-                        icon: _store.isliked == true
+                        icon: _isLiked
                             ? const Icon(Icons.favorite, color: Colors.red)
                             : const Icon(Icons.favorite_border, color: Color(0xff0F393A)),
                       ),
                       // Text(likes as String),
-                      Text(likes.toString()),
+                      GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(context: context, builder: (context) {
+                            return Container(
+                              width: double.infinity,
+                              // height: 200,
+                              color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Column(
+                                  children: [
+                                    const Text('Likes',style: TextStyle(fontSize: 20),),
+                                    const SizedBox(height: 10),
+                                    FutureBuilder(
+                                      future: _store.getLikes(widget.postid),
+                                      builder: (context,AsyncSnapshot<List> snapshot) {
+                                        print(snapshot.data); 
+                                        if (snapshot.hasData) {
+                                          // return SizedBox();
+                                          return ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount: snapshot.data?.length,
+                                            itemBuilder: (context, index) {
+                                              return ListTile(
+                                                leading: CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundImage: snapshot.data![index]['profileImage'] != null
+                                                      ? Image.network(snapshot.data![index]['profileImage']).image
+                                                      : null,
+                                                ),
+                                                title: Text(snapshot.data![index]['name'])
+                                              );
+                                            },
+                                          );
+                                        } else {
+                                          return const Center(child: CircularProgressIndicator());
+                                        }
+                                      },
+                                    )
+                                  ],
+                                ),
+                              ),
+                            );
+                          });
+                        },
+                        child: Text(widget.likes.toString())
+                      ),
                       // likes != null ? Text(likes.toString()) : const Text('0'),
                       const SizedBox(width: 15),
                       IconButton(
