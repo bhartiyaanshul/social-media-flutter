@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:social_media/main.dart';
+import 'package:social_media/services/post_service.dart';
 import 'package:social_media/services/storage_services.dart';
 
 class CreatePost extends StatefulWidget {
@@ -20,7 +21,7 @@ class _CreatePostState extends State<CreatePost> {
   final descController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
 
-  final _store = locator<StorageServices>();
+  final _postService = locator<PostService>();
   final user = FirebaseAuth.instance.currentUser;
 
   
@@ -57,7 +58,7 @@ class _CreatePostState extends State<CreatePost> {
     }
 
     createPost(){
-      _store.createPost(
+      _postService.createPost(
           title: titleController.text,
           description: descController.text,
           file: _image!,

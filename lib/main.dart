@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:social_media/home_page.dart';
 import 'package:social_media/onboarding_page.dart';
 import 'package:social_media/services/auth_services.dart';
+import 'package:social_media/services/post_service.dart';
 import 'package:social_media/services/storage_services.dart';
 import 'package:social_media/signin_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,6 +19,7 @@ Future<void> main() async {
   );
   locator.registerSingleton<AuthService>(AuthService());
   locator.registerSingleton<StorageServices>(StorageServices());
+  locator.registerSingleton<PostService>(PostService());
   runApp( MyApp());
 }
 

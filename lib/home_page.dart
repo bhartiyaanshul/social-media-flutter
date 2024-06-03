@@ -5,6 +5,7 @@ import 'package:social_media/create_post.dart';
 import 'package:social_media/main.dart';
 import 'package:social_media/post_widget.dart';
 import 'package:social_media/services/auth_services.dart';
+import 'package:social_media/services/post_service.dart';
 import 'package:social_media/services/storage_services.dart';
 import 'package:social_media/signin_page.dart';
 
@@ -17,12 +18,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _auth = locator<AuthService>();
-  final _store = locator<StorageServices>();
+  final _postService = locator<PostService>();
   List<Map<String, dynamic>> posts = [];
   Map<String, dynamic>? users = {};
 
   getPosts() async {
-    posts = await _store.getPosts();
+    posts = await _postService.getPosts();
     setState(() {});
   }
 
@@ -77,6 +78,7 @@ class _HomePageState extends State<HomePage> {
                     image: post['postImage'],
                     user: post['createdBy'],
                     postid: post['id'],
+                    likes: post['likesCount']
                   ),
                 );
               })),

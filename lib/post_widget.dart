@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:social_media/main.dart';
+import 'package:social_media/services/post_service.dart';
 import 'package:social_media/services/storage_services.dart';
 
 class PostWidget extends StatefulWidget {
@@ -12,7 +13,8 @@ class PostWidget extends StatefulWidget {
   final String? image;
   final String? user;
   final String? postid;
-  PostWidget({super.key, this.description, this.image, this.user, this.postid});
+  final int? likes;
+  PostWidget({super.key, this.description, this.image, this.user, this.postid,  this.likes});
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -20,19 +22,22 @@ class PostWidget extends StatefulWidget {
 
 class _PostWidgetState extends State<PostWidget> {
   final _store = locator<StorageServices>();
+  final _postService = locator<PostService>();
   bool _isLiked = false;
-  var likeCounts = 0;
+  int likeCounts = 0;
 
   final userId = FirebaseAuth.instance.currentUser!.uid;
 
   getLike() async {
-    final likebool = await _store.isliked(userId: userId, postId: widget.postid);
+    final likebool = await _postService.isliked(userId: userId, postId: widget.postid);
     _isLiked = likebool ? true : false;
     print(likebool);
   }
 
   getLikeCounts() async {
-    likeCounts = await _store.likeCounts(widget.postid);
+    setState(() {
+      likeCounts = widget.likes!;
+    });
   }
 
   @override
@@ -45,7 +50,7 @@ class _PostWidgetState extends State<PostWidget> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: _store.getUserDetails(widget.user),
+        future: _postService.getUserDetails(widget.user),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Container(
@@ -148,7 +153,11 @@ class _PostWidgetState extends State<PostWidget> {
                       IconButton(
                         onPressed: (){
                           print(widget.postid);
-                          _store.likePost(userId: userId, postId: widget.postid);
+                          if(_isLiked){
+                            _postService.unlikePost(userId: userId, postId: widget.postid);
+                          } else {
+                            _postService.likePost(userId: userId, postId: widget.postid);
+                          }
                           // _store.getLikes(widget.postid);
                           setState(() {
                             print(_isLiked);
@@ -168,6 +177,7 @@ class _PostWidgetState extends State<PostWidget> {
                       // Text(likes as String),
                       GestureDetector(
                         onTap: () {
+                          // _postService.getLikedUsers(widget.postid);
                           showModalBottomSheet(context: context, builder: (context) {
                             print('tedttsidc');
                             // final likeding = _store.getLikes(widget.postid);
@@ -176,37 +186,37 @@ class _PostWidgetState extends State<PostWidget> {
                               // height: 200,
                               color: Colors.white,
                               child: Padding(
-                                padding: const EdgeInsets.all(20.0),
+                                padding: EdgeInsets.all(20.0),
                                 child: Column(
                                   children: [
                                     const Text('Likes',style: TextStyle(fontSize: 20),),
                                     const SizedBox(height: 10),
-                                    // FutureBuilder(
-                                    //   future: _store.getLikes(widget.postid),
-                                    //   builder: (context,AsyncSnapshot<List> snapshot) {
-                                    //     print(snapshot.data); 
-                                    //     if (snapshot.hasData) {
-                                    //       // return SizedBox();
-                                    //       return ListView.builder(
-                                    //         shrinkWrap: true,
-                                    //         itemCount: snapshot.data?.length,
-                                    //         itemBuilder: (context, index) {
-                                    //           return ListTile(
-                                    //             leading: CircleAvatar(
-                                    //               radius: 20,
-                                    //               backgroundImage: snapshot.data![index]['profileImage'] != null
-                                    //                   ? Image.network(snapshot.data![index]['profileImage']).image
-                                    //                   : null,
-                                    //             ),
-                                    //             title: Text(snapshot.data![index]['name'])
-                                    //           );
-                                    //         },
-                                    //       );
-                                    //     } else {
-                                    //       return const Center(child: CircularProgressIndicator());
-                                    //     }
-                                    //   },
-                                    // )
+                                    FutureBuilder(
+                                      future: _postService.getLikedUsers(widget.postid),
+                                      builder: (context,AsyncSnapshot<List> snapshot) {
+                                        print(snapshot.data); 
+                                        if (snapshot.hasData) {
+                                          // return SizedBox();
+                                          return ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount: snapshot.data?.length,
+                                            itemBuilder: (context, index) {
+                                              return ListTile(
+                                                leading: CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundImage: snapshot.data![index]['profileImage'] != null
+                                                      ? Image.network(snapshot.data![index]['profileImage']).image
+                                                      : null,
+                                                ),
+                                                title: Text(snapshot.data![index]['name'])
+                                              );
+                                            },
+                                          );
+                                        } else {
+                                          return const Center(child: CircularProgressIndicator());
+                                        }
+                                      },
+                                    )
                                   ],
                                 ),
                               ),
@@ -215,7 +225,6 @@ class _PostWidgetState extends State<PostWidget> {
                         },
                         child: Text(likeCounts.toString())
                       ),
-                      // likes != null ? Text(likes.toString()) : const Text('0'),
                       const SizedBox(width: 15),
                       IconButton(
                         onPressed: (){},
