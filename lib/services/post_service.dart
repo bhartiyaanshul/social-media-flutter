@@ -40,6 +40,7 @@ class PostService{
         'postImage': imageUrl,
         'id': postDocRef.id,
         'likesCount': 0,
+        'commentsCount': 0,
         'createdAt': Timestamp.now()
       });
     }
@@ -82,6 +83,8 @@ class PostService{
       print('already liked');
     }
   }
+
+
 
   Future<void> unlikePost({String? postId, String? userId}) async {
     final postDocRef = postCollectionRef.doc(postId);
@@ -145,6 +148,32 @@ class PostService{
     // } else {
     //   return false;
     // }
+  }
+
+
+  Future<String?> postComment({String? postId, String? userId, String? message}) async {
+    final postDocRef = postCollectionRef.doc(postId);
+    final postCommentDocRef = postCollectionRef.doc(postId).collection('comments');
+    print(postCommentDocRef);
+      await postDocRef.set({
+        'commentsCount': FieldValue.increment(1)
+      },
+        SetOptions(merge: true)
+      );
+      await postCommentDocRef.add({
+        'userId': userId,
+        'comment': message,
+        'createdAt': Timestamp.now(),
+        'updatedAt': Timestamp.now()
+      });
+    return postCommentDocRef.id;
+  }
+  
+  Future<List<Map<String, dynamic>>> getComments({String? postId}) async {
+    final postCommentDocRef = postCollectionRef.doc(postId).collection('comments');
+    final docRef = await postCommentDocRef.get();
+    print(docRef.docs.map((doc) => {...doc.data()}).toList());
+    return docRef.docs.map((doc) => {...doc.data()}).toList();
   }
 
 }

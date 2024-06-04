@@ -49,17 +49,33 @@ class _HomePageState extends State<HomePage> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
-            child: IconButton(
-              icon: const Icon(Icons.search, size: 28),
-              onPressed: () async {
-                await _auth.signOut();
-                if (!_auth.isloggedIn) {
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SignInPage()));
-                }
-              },
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.search, size: 28),
+                  onPressed: () async {
+                    await _auth.signOut();
+                    if (!_auth.isloggedIn) {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignInPage()));
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.person_outlined, size: 28),
+                  onPressed: () async {
+                    await _auth.signOut();
+                    if (!_auth.isloggedIn) {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SignInPage()));
+                    }
+                  },
+                ),
+              ],
             ),
           )
         ],
@@ -78,7 +94,8 @@ class _HomePageState extends State<HomePage> {
                     image: post['postImage'],
                     user: post['createdBy'],
                     postid: post['id'],
-                    likes: post['likesCount']
+                    likes: post['likesCount'],
+                    comments: post['commentsCount'] ?? 0
                   ),
                 );
               })),
