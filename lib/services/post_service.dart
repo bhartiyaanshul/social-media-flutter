@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -153,26 +155,51 @@ class PostService{
 
   Future<String?> postComment({String? postId, String? userId, String? message}) async {
     final postDocRef = postCollectionRef.doc(postId);
-    final postCommentDocRef = postCollectionRef.doc(postId).collection('comments');
+    final postCommentDocRef = postCollectionRef.doc(postId).collection('comments').doc();
+    final docId = postCommentDocRef.id;
     print(postCommentDocRef);
       await postDocRef.set({
         'commentsCount': FieldValue.increment(1)
       },
         SetOptions(merge: true)
       );
-      await postCommentDocRef.add({
+
+      await postCommentDocRef.set({
         'userId': userId,
         'comment': message,
+        'id': docId,
         'createdAt': Timestamp.now(),
         'updatedAt': Timestamp.now()
       });
-    return postCommentDocRef.id;
+
+      log("This is the latest id" + docId);
+
+    return docId;
   }
   
   Future<List<Map<String, dynamic>>> getComments({String? postId}) async {
     final postCommentDocRef = postCollectionRef.doc(postId).collection('comments');
     final docRef = await postCommentDocRef.get();
-    print(docRef.docs.map((doc) => {...doc.data()}).toList());
+    print('idididid');
+    // print(docRef.docs.map((doc) => {doc.id,{...doc.data()}}).toList());
+    // return docRef.docs.map((doc) => {doc.id,{...doc.data()}}).toList();
+    print(docRef.docs.map((doc) => {...doc.data(),'id':doc.id}).toList());
+    return docRef.docs.map((doc) => {...doc.data(),'id':doc.id}).toList();
+  }
+
+  Future<void> deleteComment({String? postId, String? commentId}) async {
+    final postDocRef = postCollectionRef.doc(postId);
+    final postCommentDocRef = postCollectionRef.doc(postId).collection('comments');
+    await postDocRef.set({
+      'commentsCount': FieldValue.increment(-1)
+    },
+      SetOptions(merge: true)
+    );
+    await postCommentDocRef.doc(commentId).delete();
+  }
+
+  Future<List<Map<String, dynamic>>> getUserPosts({String? userId}) async {
+    final docRef = await postCollectionRef.where('createdBy', isEqualTo: userId).get();
     return docRef.docs.map((doc) => {...doc.data()}).toList();
   }
 

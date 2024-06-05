@@ -1,7 +1,10 @@
+import 'dart:developer';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get_time_ago/get_time_ago.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:social_media/comment_tile_widget.dart';
 import 'package:social_media/main.dart';
@@ -15,14 +18,16 @@ class PostWidget extends StatefulWidget {
   final String? postid;
   final int? likes;
   final int? comments;
-  PostWidget(
+  final Timestamp createdAt;
+  const PostWidget(
       {super.key,
       this.description,
       this.image,
       this.user,
       this.postid,
       this.likes,
-      this.comments});
+      this.comments,
+      required this.createdAt});
 
   @override
   State<PostWidget> createState() => _PostWidgetState();
@@ -46,7 +51,7 @@ class _PostWidgetState extends State<PostWidget> {
     final likebool =
         await _postService.isliked(userId: userId, postId: widget.postid);
     _isLiked = likebool ? true : false;
-    print(likebool);
+    // print(likebool);
   }
 
   getLikeCounts() {
@@ -57,7 +62,7 @@ class _PostWidgetState extends State<PostWidget> {
 
   getComments() async {
     comments = await _postService.getComments(postId: widget.postid);
-    print(comments);
+    // print(comments);
     setState(() {});
   }
 
@@ -82,7 +87,6 @@ class _PostWidgetState extends State<PostWidget> {
         future: _postService.getUserDetails(widget.user),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            print(_isFollowing);
             return Container(
               width: double.infinity,
               child: Column(
@@ -129,24 +133,26 @@ class _PostWidgetState extends State<PostWidget> {
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 5),
-                          const Text('52 minute ago',
-                              style: TextStyle(
+                          Text(GetTimeAgo.parse(widget.createdAt.toDate()),
+                              style: const TextStyle(
                                   fontSize: 12, color: Color(0xff919191)))
                         ],
                       ),
                       const Spacer(),
                       TextButton(
-                        style: _isFollowing ? ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.white),
-                          side: MaterialStateProperty.all(
-                              const BorderSide(color: Color(0xffEEEEEE))),
-                        ):ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Color(0xff40D463)),
-                          side: MaterialStateProperty.all(
-                              const BorderSide(color: Color(0xff40D463))),
-                        ),
+                        style: _isFollowing
+                            ? ButtonStyle(
+                                backgroundColor:
+                                    MaterialStateProperty.all(Colors.white),
+                                side: MaterialStateProperty.all(
+                                    const BorderSide(color: Color(0xffEEEEEE))),
+                              )
+                            : ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all(
+                                    Color(0xff40D463)),
+                                side: MaterialStateProperty.all(
+                                    const BorderSide(color: Color(0xff40D463))),
+                              ),
                         onPressed: () {
                           if (!_isFollowing) {
                             setState(() {
@@ -158,18 +164,15 @@ class _PostWidgetState extends State<PostWidget> {
                             });
                           }
                         },
-                        child: _isFollowing ? const Text("Following",
-                            style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600
-                              )
-                            ) 
+                        child: _isFollowing
+                            ? const Text("Following",
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w600))
                             : const Text("Follow",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600
-                              )
-                            ),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600)),
                       )
                     ],
                   ),
@@ -204,7 +207,6 @@ class _PostWidgetState extends State<PostWidget> {
                       const Spacer(),
                       IconButton(
                         onPressed: () {
-                          print(widget.postid);
                           if (_isLiked) {
                             _postService.unlikePost(
                                 userId: userId, postId: widget.postid);
@@ -214,7 +216,7 @@ class _PostWidgetState extends State<PostWidget> {
                           }
                           // _store.getLikes(widget.postid);
                           setState(() {
-                            print(_isLiked);
+                            // print(_isLiked);
                             if (!_isLiked) {
                               _isLiked = true;
                               likeCounts++;
@@ -229,15 +231,11 @@ class _PostWidgetState extends State<PostWidget> {
                             : const Icon(Icons.favorite_border,
                                 color: Color(0xff0F393A)),
                       ),
-                      // Text(likes as String),
                       GestureDetector(
                           onTap: () {
-                            // _postService.getLikedUsers(widget.postid);
                             showModalBottomSheet(
                                 context: context,
                                 builder: (context) {
-                                  print('tedttsidc');
-                                  // final likeding = _store.getLikes(widget.postid);
                                   return Container(
                                     width: double.infinity,
                                     // height: 200,
@@ -256,9 +254,8 @@ class _PostWidgetState extends State<PostWidget> {
                                                 .getLikedUsers(widget.postid),
                                             builder: (context,
                                                 AsyncSnapshot<List> snapshot) {
-                                              print(snapshot.data);
+                                              // print(snapshot.data);
                                               if (snapshot.hasData) {
-                                                // return SizedBox();
                                                 return ListView.builder(
                                                   shrinkWrap: true,
                                                   itemCount:
@@ -304,20 +301,20 @@ class _PostWidgetState extends State<PostWidget> {
                       const SizedBox(width: 15),
                       IconButton(
                         onPressed: () {
-                          print(comments);
+                          // print(comments);
                           showModalBottomSheet(
                             enableDrag: true,
                             showDragHandle: false,
                             context: context,
                             builder: (context) {
                               return StatefulBuilder(
-                                  builder: (context, setState) {
+                                  builder: (context, setStateForBuilder) {
                                 return Container(
                                   // height: 400,
                                   width: double.infinity,
                                   color: Colors.white,
                                   child: Padding(
-                                    padding: EdgeInsets.all(20.0),
+                                    padding: const EdgeInsets.all(10.0),
                                     child: Stack(
                                       children: [
                                         const SizedBox(height: 10),
@@ -327,10 +324,27 @@ class _PostWidgetState extends State<PostWidget> {
                                           itemCount: comments.length,
                                           shrinkWrap: true,
                                           itemBuilder: (context, index) {
+                                            print('comments');
+                                            print(comments[index]);
+                                            print(comments[index]['id']);
+
                                             return CommentTileWidget(
                                               comment: comments[index]
                                                   ['comment'],
                                               userId: comments[index]['userId'],
+                                              createdAt: comments[index]
+                                                  ['createdAt'],
+                                              postid: widget.postid,
+                                              commentid: comments[index]['id'],
+                                              onDelete: (id) {
+                                                comments.removeWhere(
+                                                    (element) =>
+                                                        element['id'] == id);
+                                                setState(() {
+                                                  commentsCount--;
+                                                });
+                                                setStateForBuilder((){});
+                                              },
                                             );
                                           },
                                         ),
@@ -378,23 +392,30 @@ class _PostWidgetState extends State<PostWidget> {
                                                         final commentMessage =
                                                             commentController
                                                                 .text;
-                                                        setState(() {
+
+                                                        commentController
+                                                            .clear();
+                                                        var commentId =
+                                                            await _postService
+                                                                .postComment(
+                                                                    userId:
+                                                                        userId,
+                                                                    postId: widget
+                                                                        .postid,
+                                                                    message:
+                                                                        commentMessage);
+                                                        setStateForBuilder(() {
+                                                          print(commentId);
                                                           commentsCount++;
                                                           comments.add({
                                                             'userId': userId,
                                                             'comment':
-                                                                commentMessage
+                                                                commentMessage,
+                                                            'id': commentId,
+                                                            'createdAt':
+                                                                Timestamp.now(),
                                                           });
                                                         });
-                                                        commentController
-                                                            .clear();
-                                                        await _postService
-                                                            .postComment(
-                                                                userId: userId,
-                                                                postId: widget
-                                                                    .postid,
-                                                                message:
-                                                                    commentMessage);
                                                       },
                                                       style: ButtonStyle(
                                                           backgroundColor:
@@ -418,17 +439,6 @@ class _PostWidgetState extends State<PostWidget> {
                                             ),
                                           ),
                                         ),
-                                        // const SizedBox(height: 20),
-                                        // const Row(
-                                        //   children: [
-                                        //     CircleAvatar(
-                                        //       radius: 20,
-                                        //       backgroundColor: Colors.grey,
-                                        //     ),
-                                        //     SizedBox(width: 10),
-                                        //     Text('Username',style: TextStyle(fontWeight: FontWeight.bold),),
-                                        //   ],
-                                        // )
                                       ],
                                     ),
                                   ),
@@ -504,12 +514,6 @@ class _PostWidgetState extends State<PostWidget> {
                                   )
                                 ],
                               ),
-                              // const Spacer(),
-                              // Container(
-                              //   height: 30,
-                              //   width: 100,
-                              //   color: Colors.grey,
-                              // )
                             ],
                           ),
                           const SizedBox(height: 25),

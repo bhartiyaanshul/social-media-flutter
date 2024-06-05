@@ -4,9 +4,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:social_media/create_post.dart';
 import 'package:social_media/main.dart';
 import 'package:social_media/post_widget.dart';
+import 'package:social_media/profile_page.dart';
 import 'package:social_media/services/auth_services.dart';
 import 'package:social_media/services/post_service.dart';
-import 'package:social_media/services/storage_services.dart';
 import 'package:social_media/signin_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -66,13 +66,10 @@ class _HomePageState extends State<HomePage> {
                 IconButton(
                   icon: const Icon(Icons.person_outlined, size: 28),
                   onPressed: () async {
-                    await _auth.signOut();
-                    if (!_auth.isloggedIn) {
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SignInPage()));
-                    }
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ProfilePage()));
                   },
                 ),
               ],
@@ -82,7 +79,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Center(
           child: ListView.separated(
-              cacheExtent: 500,
+              cacheExtent: 2000,
               itemCount: posts.length,
               separatorBuilder: (context, index) => const Divider(),
               itemBuilder: (context, index) {
@@ -95,7 +92,8 @@ class _HomePageState extends State<HomePage> {
                     user: post['createdBy'],
                     postid: post['id'],
                     likes: post['likesCount'],
-                    comments: post['commentsCount'] ?? 0
+                    comments: post['commentsCount'] ?? 0,
+                    createdAt: post['createdAt']
                   ),
                 );
               })),
