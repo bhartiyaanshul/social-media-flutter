@@ -1,17 +1,14 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get_time_ago/get_time_ago.dart';
-import 'package:path/path.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:social_media/comment_tile_widget.dart';
 import 'package:social_media/main.dart';
+import 'package:social_media/post_page.dart';
 import 'package:social_media/profile_page.dart';
 import 'package:social_media/services/post_service.dart';
-import 'package:social_media/services/storage_services.dart';
 
 class PostWidget extends StatefulWidget {
   final String? description;
@@ -21,6 +18,7 @@ class PostWidget extends StatefulWidget {
   final int? likes;
   final int? comments;
   final Timestamp createdAt;
+
   const PostWidget(
       {super.key,
       this.description,
@@ -37,7 +35,6 @@ class PostWidget extends StatefulWidget {
 
 class _PostWidgetState extends State<PostWidget> {
   final currentUser = FirebaseAuth.instance.currentUser!.uid;
-  final _store = locator<StorageServices>();
   final _postService = locator<PostService>();
   bool _isLiked = false;
   bool _isFollowing = false;
@@ -58,8 +55,8 @@ class _PostWidgetState extends State<PostWidget> {
   }
 
   getFollow() async {
-    final followbool = await _postService.isFollowing(
-        user: userId, author: widget.user);
+    final followbool =
+        await _postService.isFollowing(user: userId, author: widget.user);
     _isFollowing = followbool ? true : false;
     print(followbool);
   }
@@ -108,9 +105,10 @@ class _PostWidgetState extends State<PostWidget> {
                     onTap: () {
                       print(snapshot.data?['id']);
                       Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ProfilePage(userId: snapshot.data?['id'])));
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  ProfilePage(userId: snapshot.data?['id'])));
                     },
                     child: Row(
                       children: [
@@ -159,56 +157,71 @@ class _PostWidgetState extends State<PostWidget> {
                           ],
                         ),
                         const Spacer(),
-                        if(snapshot.data?['id'] != currentUser) TextButton(
-                          style: _isFollowing
-                              ? ButtonStyle(
-                                  backgroundColor:
-                                      MaterialStateProperty.all(Colors.white),
-                                  side: MaterialStateProperty.all(
-                                      const BorderSide(color: Color(0xffEEEEEE))),
-                                )
-                              : ButtonStyle(
-                                  backgroundColor: MaterialStateProperty.all(
-                                      Color(0xff40D463)),
-                                  side: MaterialStateProperty.all(
-                                      const BorderSide(color: Color(0xff40D463))),
-                                ),
-                          onPressed: () {
-                            if (!_isFollowing) {
-                              setState(() {
-                                _postService.follow(
-                                    user: userId, author: snapshot.data?['id']);
-                                _isFollowing = true;
-                              });
-                            } else {
-                              setState(() {
-                                _postService.unfollow(
-                                    user: userId, author: snapshot.data?['id']);
-                                _isFollowing = false;
-                              });
-                            }
-                          },
-                          child: _isFollowing
-                              ? const Text("Following",
-                                  style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w600))
-                              : const Text("Follow",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600)),
-                        )
+                        if (snapshot.data?['id'] != currentUser)
+                          TextButton(
+                            style: _isFollowing
+                                ? ButtonStyle(
+                                    backgroundColor:
+                                        MaterialStateProperty.all(Colors.white),
+                                    side: MaterialStateProperty.all(
+                                        const BorderSide(
+                                            color: Color(0xffEEEEEE))),
+                                  )
+                                : ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        Color(0xff40D463)),
+                                    side: MaterialStateProperty.all(
+                                        const BorderSide(
+                                            color: Color(0xff40D463))),
+                                  ),
+                            onPressed: () {
+                              if (!_isFollowing) {
+                                setState(() {
+                                  _postService.follow(
+                                      user: userId,
+                                      author: snapshot.data?['id']);
+                                  _isFollowing = true;
+                                });
+                              } else {
+                                setState(() {
+                                  _postService.unfollow(
+                                      user: userId,
+                                      author: snapshot.data?['id']);
+                                  _isFollowing = false;
+                                });
+                              }
+                            },
+                            child: _isFollowing
+                                ? const Text("Following",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w600))
+                                : const Text("Follow",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600)),
+                          )
                       ],
                     ),
                   ),
                   const SizedBox(height: 25),
                   InkWell(
                     onTap: () {
-                      // Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //         builder: (context) => ProfilePage(
-                      //             userId: snapshot.data?['id'])));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PostPage(
+                                  postid: widget.postid,
+                                  user: widget.user,
+                                  description: widget.description,
+                                  image: widget.image,
+                                  likes: likeCounts,
+                                  comments: commentsCount,
+                                  refershPage: (){
+                                    getLike();
+                                    getLikeCounts();
+                                  }
+                                  )));
                     },
                     child: Container(
                       height: 281,
@@ -220,8 +233,8 @@ class _PostWidgetState extends State<PostWidget> {
                       child: widget.image != null
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child:
-                                  Image.network(widget.image!, fit: BoxFit.fill))
+                              child: Image.network(widget.image!,
+                                  fit: BoxFit.cover))
                           : const Center(child: Text('No Image')),
                     ),
                   ),
@@ -268,7 +281,7 @@ class _PostWidgetState extends State<PostWidget> {
                       GestureDetector(
                           onTap: () {
                             showModalBottomSheet(
-                                isScrollControlled: true,
+                                // isScrollControlled: true,
                                 context: context,
                                 builder: (context) {
                                   return Container(
@@ -339,7 +352,7 @@ class _PostWidgetState extends State<PostWidget> {
                           // print(comments);
                           showModalBottomSheet(
                             useSafeArea: true,
-                            isScrollControlled: true, 
+                            isScrollControlled: true,
                             enableDrag: true,
                             showDragHandle: true,
                             context: context,
@@ -366,11 +379,13 @@ class _PostWidgetState extends State<PostWidget> {
                                               return CommentTileWidget(
                                                 comment: comments[index]
                                                     ['comment'],
-                                                userId: comments[index]['userId'],
+                                                userId: comments[index]
+                                                    ['userId'],
                                                 createdAt: comments[index]
                                                     ['createdAt'],
                                                 postid: widget.postid,
-                                                commentid: comments[index]['id'],
+                                                commentid: comments[index]
+                                                    ['id'],
                                                 onDelete: (id) {
                                                   comments.removeWhere(
                                                       (element) =>
@@ -378,7 +393,7 @@ class _PostWidgetState extends State<PostWidget> {
                                                   setState(() {
                                                     commentsCount--;
                                                   });
-                                                  setStateForBuilder((){});
+                                                  setStateForBuilder(() {});
                                                 },
                                               );
                                             },
@@ -393,11 +408,11 @@ class _PostWidgetState extends State<PostWidget> {
                                                   child: Column(
                                                     children: [
                                                       SizedBox(
-                                                        width:
-                                                            MediaQuery.of(context)
-                                                                    .size
-                                                                    .width -
-                                                                40,
+                                                        width: MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width -
+                                                            40,
                                                         child: TextField(
                                                           controller:
                                                               commentController,
@@ -405,22 +420,22 @@ class _PostWidgetState extends State<PostWidget> {
                                                               hintText:
                                                                   'Add a comment',
                                                               focusedBorder: OutlineInputBorder(
+                                                                  borderRadius: BorderRadius.all(
+                                                                      Radius.circular(
+                                                                          10)),
+                                                                  borderSide: BorderSide(
+                                                                      color: Color.fromARGB(
+                                                                          255,
+                                                                          45,
+                                                                          210,
+                                                                          90))),
+                                                              enabledBorder: OutlineInputBorder(
                                                                   borderRadius:
                                                                       BorderRadius.all(
                                                                           Radius.circular(
                                                                               10)),
-                                                                  borderSide: BorderSide(
-                                                                      color: Color
-                                                                          .fromARGB(
-                                                                              255,
-                                                                              45,
-                                                                              210,
-                                                                              90))),
-                                                              enabledBorder: OutlineInputBorder(
-                                                                  borderRadius:
-                                                                      BorderRadius.all(
-                                                                          Radius.circular(10)),
-                                                                  borderSide: BorderSide(color: Color(0xffeeeeee)))),
+                                                                  borderSide:
+                                                                      BorderSide(color: Color(0xffeeeeee)))),
                                                         ),
                                                       ),
                                                       TextButton(
@@ -428,28 +443,30 @@ class _PostWidgetState extends State<PostWidget> {
                                                             final commentMessage =
                                                                 commentController
                                                                     .text;
-                                                  
+
                                                             commentController
                                                                 .clear();
-                                                            var commentId =
-                                                                await _postService
-                                                                    .postComment(
-                                                                        userId:
-                                                                            userId,
-                                                                        postId: widget
-                                                                            .postid,
-                                                                        message:
-                                                                            commentMessage);
-                                                            setStateForBuilder(() {
+                                                            var commentId = await _postService
+                                                                .postComment(
+                                                                    userId:
+                                                                        userId,
+                                                                    postId: widget
+                                                                        .postid,
+                                                                    message:
+                                                                        commentMessage);
+                                                            setStateForBuilder(
+                                                                () {
                                                               print(commentId);
                                                               commentsCount++;
                                                               comments.add({
-                                                                'userId': userId,
+                                                                'userId':
+                                                                    userId,
                                                                 'comment':
                                                                     commentMessage,
                                                                 'id': commentId,
                                                                 'createdAt':
-                                                                    Timestamp.now(),
+                                                                    Timestamp
+                                                                        .now(),
                                                               });
                                                             });
                                                           },
@@ -461,14 +478,13 @@ class _PostWidgetState extends State<PostWidget> {
                                                               shape: MaterialStateProperty.all(
                                                                   RoundedRectangleBorder(
                                                                       borderRadius:
-                                                                          BorderRadius
-                                                                              .circular(
-                                                                                  20)))),
+                                                                          BorderRadius.circular(
+                                                                              20)))),
                                                           child: const Text(
                                                             'ADD',
                                                             style: TextStyle(
-                                                                color:
-                                                                    Colors.white),
+                                                                color: Colors
+                                                                    .white),
                                                           )),
                                                     ],
                                                   ),

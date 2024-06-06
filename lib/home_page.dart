@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:social_media/confirm_box.dart';
 import 'package:social_media/create_post.dart';
 import 'package:social_media/main.dart';
 import 'package:social_media/post_widget.dart';
@@ -31,11 +32,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _refreshData() async { 
     await Future.delayed(Duration(milliseconds: 1000)); 
-    setState(() { 
       getPosts();
-    }); 
-  } 
-
+  }
 
   @override
   void initState() {
@@ -63,12 +61,19 @@ class _HomePageState extends State<HomePage> {
                 IconButton(
                   icon: const Icon(Icons.logout_rounded, size: 28),
                   onPressed: () async {
-                    await _auth.signOut();
-                    if (!_auth.isloggedIn) {
+                    final rs = await showDialog(
+                      context: context,
+                      builder: (context){
+                        return const ConfirmBox(action: 'logout ');
+                      }
+                    );
+                    if(rs == true){
+                      await _auth.signOut();
                       Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SignInPage()));
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SignInPage())
+                      );
                     }
                   },
                 ),
@@ -88,7 +93,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Center(
           child: RefreshIndicator(
-            onRefresh: () => _refreshData(),
+            onRefresh: () => getPosts(),
             child: ListView.separated(
                 cacheExtent: 2000,
                 itemCount: posts.length,

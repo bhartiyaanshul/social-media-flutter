@@ -56,11 +56,8 @@ class PostService{
   }
 
   Future<List<Map<String, dynamic>>> getPosts() async {
-    final docRef = await postCollectionRef.get();
+    final docRef = await postCollectionRef.orderBy('createdAt', descending: true).get();
     final posts = docRef.docs.map((doc) => {...doc.data()}).toList();
-    posts.sort((a, b) {
-      return b['createdAt'].compareTo(a['createdAt']);
-    },);
     return posts;
   }
 
@@ -121,8 +118,8 @@ class PostService{
     final postLikeDocRef = postCollectionRef.doc(postId).collection('likes');
     final docRef = await postLikeDocRef.get();
     final id = docRef.docs.map((doc) => doc.id).toList();
-    final likecounts = id.length;
-    return likecounts;
+    final currLikecounts = id.length;
+    return currLikecounts;
   }
 
   Future<List> getLikedUsers(String? postId) async {
