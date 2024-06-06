@@ -193,12 +193,16 @@ class _CreatePostState extends State<CreatePost> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           if (_formkey.currentState!.validate()) {
-                            createPost();
+                            await createPost();
+                            Navigator.pop(context);
                           }
-                          _image = null;
-                          setState((){});
+                          setState((){
+                            _image = null;
+                            titleController.clear();
+                            descController.clear();
+                          });
                         },
                         child: const Text(
                           'Create Post',

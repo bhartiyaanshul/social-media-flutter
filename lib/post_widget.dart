@@ -5,9 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get_time_ago/get_time_ago.dart';
+import 'package:path/path.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:social_media/comment_tile_widget.dart';
 import 'package:social_media/main.dart';
+import 'package:social_media/profile_page.dart';
 import 'package:social_media/services/post_service.dart';
 import 'package:social_media/services/storage_services.dart';
 
@@ -34,6 +36,7 @@ class PostWidget extends StatefulWidget {
 }
 
 class _PostWidgetState extends State<PostWidget> {
+  final currentUser = FirebaseAuth.instance.currentUser!.uid;
   final _store = locator<StorageServices>();
   final _postService = locator<PostService>();
   bool _isLiked = false;
@@ -52,6 +55,13 @@ class _PostWidgetState extends State<PostWidget> {
         await _postService.isliked(userId: userId, postId: widget.postid);
     _isLiked = likebool ? true : false;
     // print(likebool);
+  }
+
+  getFollow() async {
+    final followbool = await _postService.isFollowing(
+        user: userId, author: widget.user);
+    _isFollowing = followbool ? true : false;
+    print(followbool);
   }
 
   getLikeCounts() {
@@ -79,6 +89,7 @@ class _PostWidgetState extends State<PostWidget> {
     getLikeCounts();
     getCommentCounts();
     getComments();
+    getFollow();
   }
 
   @override
@@ -87,109 +98,132 @@ class _PostWidgetState extends State<PostWidget> {
         future: _postService.getUserDetails(widget.user),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            // print(snapshot.data);
             return Container(
               width: double.infinity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Stack(
-                        children: [
-                          SizedBox(
-                            height: 50,
-                            width: 50,
-                            child: CircleAvatar(
-                              radius: 30,
-                              backgroundColor: Colors.grey,
-                              backgroundImage:
-                                  snapshot.data?['profileImage'] != null
-                                      ? Image.network(
-                                              snapshot.data?['profileImage']!)
-                                          .image
-                                      : null,
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              height: 15,
-                              width: 15,
-                              decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(50),
-                                  border: Border.all(
-                                      color: Colors.white, width: 2)),
-                            ),
-                          )
-                        ],
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(snapshot.data?['name']!,
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 5),
-                          Text(GetTimeAgo.parse(widget.createdAt.toDate()),
-                              style: const TextStyle(
-                                  fontSize: 12, color: Color(0xff919191)))
-                        ],
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        style: _isFollowing
-                            ? ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.all(Colors.white),
-                                side: MaterialStateProperty.all(
-                                    const BorderSide(color: Color(0xffEEEEEE))),
-                              )
-                            : ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
-                                    Color(0xff40D463)),
-                                side: MaterialStateProperty.all(
-                                    const BorderSide(color: Color(0xff40D463))),
+                  InkWell(
+                    onTap: () {
+                      print(snapshot.data?['id']);
+                      Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ProfilePage(userId: snapshot.data?['id'])));
+                    },
+                    child: Row(
+                      children: [
+                        Stack(
+                          children: [
+                            SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Colors.grey,
+                                backgroundImage:
+                                    snapshot.data?['profileImage'] != null
+                                        ? Image.network(
+                                                snapshot.data?['profileImage']!)
+                                            .image
+                                        : null,
                               ),
-                        onPressed: () {
-                          if (!_isFollowing) {
-                            setState(() {
-                              _isFollowing = true;
-                            });
-                          } else {
-                            setState(() {
-                              _isFollowing = false;
-                            });
-                          }
-                        },
-                        child: _isFollowing
-                            ? const Text("Following",
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600))
-                            : const Text("Follow",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600)),
-                      )
-                    ],
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                height: 15,
+                                width: 15,
+                                decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(50),
+                                    border: Border.all(
+                                        color: Colors.white, width: 2)),
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(snapshot.data?['name']!,
+                                style: const TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 5),
+                            Text(GetTimeAgo.parse(widget.createdAt.toDate()),
+                                style: const TextStyle(
+                                    fontSize: 12, color: Color(0xff919191)))
+                          ],
+                        ),
+                        const Spacer(),
+                        if(snapshot.data?['id'] != currentUser) TextButton(
+                          style: _isFollowing
+                              ? ButtonStyle(
+                                  backgroundColor:
+                                      MaterialStateProperty.all(Colors.white),
+                                  side: MaterialStateProperty.all(
+                                      const BorderSide(color: Color(0xffEEEEEE))),
+                                )
+                              : ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(
+                                      Color(0xff40D463)),
+                                  side: MaterialStateProperty.all(
+                                      const BorderSide(color: Color(0xff40D463))),
+                                ),
+                          onPressed: () {
+                            if (!_isFollowing) {
+                              setState(() {
+                                _postService.follow(
+                                    user: userId, author: snapshot.data?['id']);
+                                _isFollowing = true;
+                              });
+                            } else {
+                              setState(() {
+                                _postService.unfollow(
+                                    user: userId, author: snapshot.data?['id']);
+                                _isFollowing = false;
+                              });
+                            }
+                          },
+                          child: _isFollowing
+                              ? const Text("Following",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w600))
+                              : const Text("Follow",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600)),
+                        )
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 25),
-                  Container(
-                    height: 281,
-                    width: 345,
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(10),
+                  InkWell(
+                    onTap: () {
+                      // Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //         builder: (context) => ProfilePage(
+                      //             userId: snapshot.data?['id'])));
+                    },
+                    child: Container(
+                      height: 281,
+                      width: 345,
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: widget.image != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child:
+                                  Image.network(widget.image!, fit: BoxFit.fill))
+                          : const Center(child: Text('No Image')),
                     ),
-                    child: widget.image != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child:
-                                Image.network(widget.image!, fit: BoxFit.fill))
-                        : const Center(child: Text('No Image')),
                   ),
                   const SizedBox(height: 22),
                   Text(widget.description!,
@@ -234,6 +268,7 @@ class _PostWidgetState extends State<PostWidget> {
                       GestureDetector(
                           onTap: () {
                             showModalBottomSheet(
+                                isScrollControlled: true,
                                 context: context,
                                 builder: (context) {
                                   return Container(
@@ -303,147 +338,150 @@ class _PostWidgetState extends State<PostWidget> {
                         onPressed: () {
                           // print(comments);
                           showModalBottomSheet(
+                            useSafeArea: true,
+                            isScrollControlled: true, 
                             enableDrag: true,
-                            showDragHandle: false,
+                            showDragHandle: true,
                             context: context,
                             builder: (context) {
-                              return StatefulBuilder(
-                                  builder: (context, setStateForBuilder) {
-                                return Container(
-                                  // height: 400,
-                                  width: double.infinity,
-                                  color: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Stack(
-                                      children: [
-                                        const SizedBox(height: 10),
-                                        ListView.builder(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 100),
-                                          itemCount: comments.length,
-                                          shrinkWrap: true,
-                                          itemBuilder: (context, index) {
-                                            print('comments');
-                                            print(comments[index]);
-                                            print(comments[index]['id']);
-
-                                            return CommentTileWidget(
-                                              comment: comments[index]
-                                                  ['comment'],
-                                              userId: comments[index]['userId'],
-                                              createdAt: comments[index]
-                                                  ['createdAt'],
-                                              postid: widget.postid,
-                                              commentid: comments[index]['id'],
-                                              onDelete: (id) {
-                                                comments.removeWhere(
-                                                    (element) =>
-                                                        element['id'] == id);
-                                                setState(() {
-                                                  commentsCount--;
-                                                });
-                                                setStateForBuilder((){});
-                                              },
-                                            );
-                                          },
-                                        ),
-                                        Positioned(
-                                          bottom: 0,
-                                          child: Container(
-                                            color: Colors.white,
-                                            child: Form(
-                                              key: _formkey,
-                                              child: Column(
-                                                children: [
-                                                  SizedBox(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width -
-                                                            40,
-                                                    child: TextField(
-                                                      controller:
-                                                          commentController,
-                                                      decoration: const InputDecoration(
-                                                          hintText:
-                                                              'Add a comment',
-                                                          focusedBorder: OutlineInputBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.all(
-                                                                      Radius.circular(
-                                                                          10)),
-                                                              borderSide: BorderSide(
-                                                                  color: Color
-                                                                      .fromARGB(
-                                                                          255,
-                                                                          45,
-                                                                          210,
-                                                                          90))),
-                                                          enabledBorder: OutlineInputBorder(
-                                                              borderRadius:
-                                                                  BorderRadius.all(
-                                                                      Radius.circular(10)),
-                                                              borderSide: BorderSide(color: Color(0xffeeeeee)))),
-                                                    ),
-                                                  ),
-                                                  TextButton(
-                                                      onPressed: () async {
-                                                        final commentMessage =
-                                                            commentController
-                                                                .text;
-
-                                                        commentController
-                                                            .clear();
-                                                        var commentId =
-                                                            await _postService
-                                                                .postComment(
-                                                                    userId:
-                                                                        userId,
-                                                                    postId: widget
-                                                                        .postid,
-                                                                    message:
-                                                                        commentMessage);
-                                                        setStateForBuilder(() {
-                                                          print(commentId);
-                                                          commentsCount++;
-                                                          comments.add({
-                                                            'userId': userId,
-                                                            'comment':
-                                                                commentMessage,
-                                                            'id': commentId,
-                                                            'createdAt':
-                                                                Timestamp.now(),
-                                                          });
-                                                        });
-                                                      },
-                                                      style: ButtonStyle(
-                                                          backgroundColor:
-                                                              MaterialStateProperty
-                                                                  .all(Colors
-                                                                      .green),
-                                                          shape: MaterialStateProperty.all(
-                                                              RoundedRectangleBorder(
+                              return Padding(
+                                padding: MediaQuery.of(context).viewInsets,
+                                child: StatefulBuilder(
+                                    builder: (context, setStateForBuilder) {
+                                  return Container(
+                                    // height: double.infinity,
+                                    width: double.infinity,
+                                    color: Colors.white,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10.0),
+                                      child: Stack(
+                                        children: [
+                                          const SizedBox(height: 10),
+                                          ListView.builder(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 100),
+                                            itemCount: comments.length,
+                                            shrinkWrap: true,
+                                            itemBuilder: (context, index) {
+                                              return CommentTileWidget(
+                                                comment: comments[index]
+                                                    ['comment'],
+                                                userId: comments[index]['userId'],
+                                                createdAt: comments[index]
+                                                    ['createdAt'],
+                                                postid: widget.postid,
+                                                commentid: comments[index]['id'],
+                                                onDelete: (id) {
+                                                  comments.removeWhere(
+                                                      (element) =>
+                                                          element['id'] == id);
+                                                  setState(() {
+                                                    commentsCount--;
+                                                  });
+                                                  setStateForBuilder((){});
+                                                },
+                                              );
+                                            },
+                                          ),
+                                          Positioned(
+                                            bottom: 0,
+                                            child: Container(
+                                              color: Colors.white,
+                                              child: Form(
+                                                key: _formkey,
+                                                child: Center(
+                                                  child: Column(
+                                                    children: [
+                                                      SizedBox(
+                                                        width:
+                                                            MediaQuery.of(context)
+                                                                    .size
+                                                                    .width -
+                                                                40,
+                                                        child: TextField(
+                                                          controller:
+                                                              commentController,
+                                                          decoration: const InputDecoration(
+                                                              hintText:
+                                                                  'Add a comment',
+                                                              focusedBorder: OutlineInputBorder(
                                                                   borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              20)))),
-                                                      child: const Text(
-                                                        'ADD',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Colors.white),
-                                                      )),
-                                                ],
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(
+                                                                              10)),
+                                                                  borderSide: BorderSide(
+                                                                      color: Color
+                                                                          .fromARGB(
+                                                                              255,
+                                                                              45,
+                                                                              210,
+                                                                              90))),
+                                                              enabledBorder: OutlineInputBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.all(
+                                                                          Radius.circular(10)),
+                                                                  borderSide: BorderSide(color: Color(0xffeeeeee)))),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                          onPressed: () async {
+                                                            final commentMessage =
+                                                                commentController
+                                                                    .text;
+                                                  
+                                                            commentController
+                                                                .clear();
+                                                            var commentId =
+                                                                await _postService
+                                                                    .postComment(
+                                                                        userId:
+                                                                            userId,
+                                                                        postId: widget
+                                                                            .postid,
+                                                                        message:
+                                                                            commentMessage);
+                                                            setStateForBuilder(() {
+                                                              print(commentId);
+                                                              commentsCount++;
+                                                              comments.add({
+                                                                'userId': userId,
+                                                                'comment':
+                                                                    commentMessage,
+                                                                'id': commentId,
+                                                                'createdAt':
+                                                                    Timestamp.now(),
+                                                              });
+                                                            });
+                                                          },
+                                                          style: ButtonStyle(
+                                                              backgroundColor:
+                                                                  MaterialStateProperty
+                                                                      .all(Colors
+                                                                          .green),
+                                                              shape: MaterialStateProperty.all(
+                                                                  RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .circular(
+                                                                                  20)))),
+                                                          child: const Text(
+                                                            'ADD',
+                                                            style: TextStyle(
+                                                                color:
+                                                                    Colors.white),
+                                                          )),
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              });
+                                  );
+                                }),
+                              );
                             },
                           );
                         },

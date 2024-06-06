@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,6 +20,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final _auth = locator<AuthService>();
   final _postService = locator<PostService>();
+  final currentUserId = FirebaseAuth.instance.currentUser!.uid;
   List<Map<String, dynamic>> posts = [];
   Map<String, dynamic>? users = {};
 
@@ -26,6 +28,13 @@ class _HomePageState extends State<HomePage> {
     posts = await _postService.getPosts();
     setState(() {});
   }
+
+  Future<void> _refreshData() async { 
+    await Future.delayed(Duration(milliseconds: 1000)); 
+    setState(() { 
+      getPosts();
+    }); 
+  } 
 
 
   @override
@@ -52,7 +61,7 @@ class _HomePageState extends State<HomePage> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.search, size: 28),
+                  icon: const Icon(Icons.logout_rounded, size: 28),
                   onPressed: () async {
                     await _auth.signOut();
                     if (!_auth.isloggedIn) {
@@ -65,11 +74,11 @@ class _HomePageState extends State<HomePage> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.person_outlined, size: 28),
-                  onPressed: () async {
+                  onPressed: () {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const ProfilePage()));
+                            builder: (context) => ProfilePage(userId: currentUserId)));
                   },
                 ),
               ],
@@ -78,25 +87,28 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: Center(
-          child: ListView.separated(
-              cacheExtent: 2000,
-              itemCount: posts.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final post = posts[index];
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(25, 15, 25, 15),
-                  child: PostWidget(
-                    description: post['description'],
-                    image: post['postImage'],
-                    user: post['createdBy'],
-                    postid: post['id'],
-                    likes: post['likesCount'],
-                    comments: post['commentsCount'] ?? 0,
-                    createdAt: post['createdAt']
-                  ),
-                );
-              })),
+          child: RefreshIndicator(
+            onRefresh: () => _refreshData(),
+            child: ListView.separated(
+                cacheExtent: 2000,
+                itemCount: posts.length,
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, index) {
+                  final post = posts[index];
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(25, 15, 25, 15),
+                    child: PostWidget(
+                      description: post['description'],
+                      image: post['postImage'],
+                      user: post['createdBy'],
+                      postid: post['id'],
+                      likes: post['likesCount'],
+                      comments: post['commentsCount'] ?? 0,
+                      createdAt: post['createdAt']
+                    ),
+                  );
+                }),
+          )),
     );
   }
 }

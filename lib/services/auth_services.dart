@@ -54,6 +54,10 @@ class AuthService{
         'name': name,
         'username': username,
         'email': email,
+        'id': id,
+        'followers':0,
+        'following':0,
+        'postsCount':0,
         'profileImage': imageUrl,
         'createdAt': Timestamp.now()
       });

@@ -45,6 +45,10 @@ class PostService{
         'commentsCount': 0,
         'createdAt': Timestamp.now()
       });
+
+      await userCollectionRef.doc(user).update({
+        'postsCount': FieldValue.increment(1)
+      });
     }
     catch(e){
       print(e);
@@ -53,12 +57,17 @@ class PostService{
 
   Future<List<Map<String, dynamic>>> getPosts() async {
     final docRef = await postCollectionRef.get();
-    return docRef.docs.map((doc) => {...doc.data()}).toList();
+    final posts = docRef.docs.map((doc) => {...doc.data()}).toList();
+    posts.sort((a, b) {
+      return b['createdAt'].compareTo(a['createdAt']);
+    },);
+    return posts;
   }
 
   Future<Map<String, dynamic>?> getUserDetails(String? id) async {
     final docRef = await userCollectionRef.doc(id).get();
     return docRef.data();
+    // return docRef.map((doc) => {...doc.data(),'id':doc.id});
   }
 
   Future<void> likePost({String? postId, String? userId}) async {
@@ -139,17 +148,6 @@ class PostService{
     } else {
       return false;
     }
-    // final postDocRef = postCollectionRef.doc(postId);
-    // final post = await postDocRef.get();
-    // if(post.data()?['likes'] != null){
-    //   if(post.data()?['likes'].contains(userId)){
-    //     return true;
-    //   } else {
-    //     return false;
-    //   }
-    // } else {
-    //   return false;
-    // }
   }
 
 
@@ -203,4 +201,56 @@ class PostService{
     return docRef.docs.map((doc) => {...doc.data()}).toList();
   }
 
+  Future<String?> follow({String? author, String? user}) async {
+    final followingDocRef = userCollectionRef.doc(user).collection('following');
+    final followerDocRef = userCollectionRef.doc(author).collection('followers');
+    
+    await userCollectionRef.doc(user).update({
+      'following': FieldValue.increment(1)
+    });
+
+    await userCollectionRef.doc(author).update({
+      'follower': FieldValue.increment(1)
+    });
+
+    await followingDocRef.doc(author).set({
+      'userId': author,
+      'createdAt': Timestamp.now(),
+      'updatedAt': Timestamp.now()
+    }).then((value) => {
+
+    });
+
+    await followerDocRef.doc(user).set({
+      'userId': user,
+      'createdAt': Timestamp.now(),
+      'updatedAt': Timestamp.now()
+    });
+  }
+
+  Future<String?> unfollow({String? author, String? user}) async {
+    final followingDocRef = userCollectionRef.doc(user).collection('following');
+    final followerDocRef = userCollectionRef.doc(author).collection('followers');
+    
+    await userCollectionRef.doc(user).update({
+      'following': FieldValue.increment(-1)
+    });
+
+    await userCollectionRef.doc(author).update({
+      'follower': FieldValue.increment(-1)
+    });
+    
+    try{
+      await followingDocRef.doc(author).delete();
+      await followerDocRef.doc(user).delete();
+    } catch(e){
+      print(e);
+    }
+  }
+
+  isFollowing({String? author, String? user}) async {
+    final followerDocRef = userCollectionRef.doc(author).collection('followers');
+    final getUserFollow = await followerDocRef.doc(user).get();
+    return getUserFollow.exists;
+  }
 }
