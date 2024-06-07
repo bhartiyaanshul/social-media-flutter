@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -86,7 +87,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 radius: 70,
                 backgroundColor: Colors.grey,
                 backgroundImage: userDetails?['profileImage'] != null
-                    ? Image.network(userDetails?['profileImage']!).image
+                    ? CachedNetworkImageProvider(userDetails?['profileImage']!)
+                    // ? Image.network(userDetails?['profileImage']!).image
                     : null,
               ),
               const SizedBox(height: 20),
@@ -385,8 +387,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: post['postImage'] != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(post['postImage']!,
-                                      fit: BoxFit.fill))
+                                  child : CachedNetworkImage(
+                                            imageUrl: post['postImage'].toString(),
+                                          ))
+                                  // child: Image.network(post['postImage']!,
+                                  //     fit: BoxFit.fill))
                               : const Center(child: Text('No Image')),
                         ),
                       );

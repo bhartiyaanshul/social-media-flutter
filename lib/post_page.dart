@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -83,7 +84,17 @@ class _PostPageState extends State<PostPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: widget.image != null
-                    ? Image.network(widget.image!, fit: BoxFit.cover)
+                    ? CachedNetworkImage(
+                        imageUrl: widget.image.toString(),
+                        imageBuilder: (context, imageProvider) => Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                                ),
+                          ),
+                        ),
+                      ) 
                     : const Center(child: Text('No Image')),
               ),
               SafeArea(
