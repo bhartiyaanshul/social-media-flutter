@@ -8,9 +8,8 @@ class ConfirmBox extends StatelessWidget {
   @override
   Widget build(context) {
     return AlertDialog(
-      content: Container(
+      content: SizedBox(
         height: 90,
-        // padding: const EdgeInsets.only(bottom: 10),
         child: Column(
           children: [
             const SizedBox(height: 10,),
@@ -26,7 +25,6 @@ class ConfirmBox extends StatelessWidget {
                     },
                     child: const Text("Yes")),
                 const SizedBox(width: 20,),
-                // Spacer(),
                 ElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pop(false);

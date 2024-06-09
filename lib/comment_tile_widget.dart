@@ -28,7 +28,6 @@ class _CommentTileWidgetState extends State<CommentTileWidget> {
 
   getUserDetails() async {
     final user = await _postService.getUserDetails(widget.userId);
-    print(userDetails);
     setState(() {
       userDetails = user!;
     });
@@ -36,17 +35,12 @@ class _CommentTileWidgetState extends State<CommentTileWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUserDetails();
   }
 
   @override
   Widget build(BuildContext context) {
-    // print(widget.comment);
-    // print(widget.userId);
-    // print(userDetails);
-    // print(widget.commentid);
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
@@ -64,7 +58,6 @@ class _CommentTileWidgetState extends State<CommentTileWidget> {
           currentUser == widget.userId
               ? IconButton(
                 onPressed: () async {
-                  print(widget.commentid);
                   await _postService.deleteComment(postId: widget.postid, commentId: widget.commentid);
                   widget.onDelete(widget.commentid);
                 },

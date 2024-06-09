@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:social_media/main.dart';
 import 'package:social_media/services/post_service.dart';
-import 'package:social_media/services/storage_services.dart';
 
 class CreatePost extends StatefulWidget {
   const CreatePost({super.key});

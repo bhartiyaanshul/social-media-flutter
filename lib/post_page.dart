@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:social_media/comment_tile_widget.dart';
 import 'package:social_media/main.dart';
@@ -39,7 +38,6 @@ class _PostPageState extends State<PostPage> {
 
   getComments() async {
     final commentsData = await _postService.getComments(postId: widget.postid);
-    // print(comments);
     setState(() {
       comments = commentsData;
     });
@@ -53,7 +51,6 @@ class _PostPageState extends State<PostPage> {
   }
 
   getLikeCounts() {
-    print(widget.likes);
     setState(() {
       likeCounts = widget.likes!;
     });
@@ -61,7 +58,6 @@ class _PostPageState extends State<PostPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getComments();
     getLike();
@@ -140,7 +136,7 @@ class _PostPageState extends State<PostPage> {
                         color: Colors.white,
                       ),
                       const Text('8', style: TextStyle(fontSize: 14, color: Colors.white),),
-                      Spacer(),
+                      const Spacer(),
                       IconButton(
                         onPressed: () {
                           if (_isLiked) {
@@ -150,9 +146,7 @@ class _PostPageState extends State<PostPage> {
                             _postService.likePost(
                                 userId: currentUser, postId: widget.postid);
                           }
-                          // _store.getLikes(widget.postid);
                           setState(() {
-                            // print(_isLiked);
                             if (!_isLiked) {
                               _isLiked = true;
                               likeCounts++;
@@ -167,10 +161,9 @@ class _PostPageState extends State<PostPage> {
                             : const Icon(Icons.favorite_border,
                                 color: Colors.white),
                       ),
-                      Text(likeCounts.toString(), style: TextStyle(fontSize: 14, color: Colors.white),),
+                      Text(likeCounts.toString(), style: const TextStyle(fontSize: 14, color: Colors.white),),
                       IconButton(
                         onPressed: () {
-                          print('Comment');
                         },
                         icon: SvgPicture.asset(
                           'assets/icons/CommentIconLight.svg',
@@ -178,7 +171,7 @@ class _PostPageState extends State<PostPage> {
                         ),
                         color: Colors.white,
                       ),
-                      Text(widget.comments.toString(), style: TextStyle(fontSize: 14, color: Colors.white),),
+                      Text(widget.comments.toString(), style: const TextStyle(fontSize: 14, color: Colors.white),),
                       const SizedBox(width: 25,)
                     ],
                   ),
@@ -197,14 +190,10 @@ class _PostPageState extends State<PostPage> {
             ),
           ),
           Expanded(
-            // width: double.infinity,
-            // height: 350,
             child: ListView.builder(
               padding: EdgeInsets.zero,
               itemCount: comments.length,
               itemBuilder: (context, index) {
-                print(comments);
-                print(comments[index]);
                 return CommentTileWidget(
                   comment: comments[index]['comment'],
                   userId: comments[index]['userId'],

@@ -26,14 +26,12 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       posts = postsdata;
     });
-    print(posts);
   }
 
   getFollow() async {
     final followbool = await _postService.isFollowing(
         user: currentUser, author: widget.userId);
     _isFollowing = followbool ? true : false;
-    print(followbool);
   }
 
   getUserDetails() async {
@@ -41,12 +39,10 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       userDetails = userDetails;
     });
-    print(userDetails);
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUserDetails();
     getUserPosts();
@@ -235,7 +231,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             )
                           : ButtonStyle(
                               backgroundColor:
-                                  MaterialStateProperty.all(Color(0xff40D463)),
+                                  MaterialStateProperty.all(const Color(0xff40D463)),
                               side: MaterialStateProperty.all(
                                   const BorderSide(color: Color(0xff40D463))),
                             ),
@@ -383,7 +379,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(left: 16),
                         child: SizedBox(
                           height: 180,
-                          // width: 130,
                           child: post['postImage'] != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(8),

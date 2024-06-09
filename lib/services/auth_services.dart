@@ -35,7 +35,7 @@ class AuthService{
       log("something went wrong $e");
       print(auth);
     }
-    return null;
+    return;
   }
 
   final userCollectionRef = FirebaseFirestore.instance.collection("users");
@@ -72,14 +72,10 @@ class AuthService{
     required String password
   }) async {
     try{
-      print('Signing in');
-      print(email);
-      print(password);
       final credential = await auth.signInWithEmailAndPassword(
         email: email, 
         password: password
       );
-      print(credential.user);
       return credential.user;
     }
     catch(e){
@@ -91,7 +87,6 @@ class AuthService{
   Future<void> signOut() async {
     try{
       await auth.signOut();
-      print("User Signed Out");
     }
     catch(e){
       log("$e");

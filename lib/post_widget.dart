@@ -52,14 +52,12 @@ class _PostWidgetState extends State<PostWidget> {
     final likebool =
         await _postService.isliked(userId: userId, postId: widget.postid);
     _isLiked = likebool ? true : false;
-    // print(likebool);
   }
 
   getFollow() async {
     final followbool =
         await _postService.isFollowing(user: userId, author: widget.user);
     _isFollowing = followbool ? true : false;
-    print(followbool);
   }
 
   getLikeCounts() {
@@ -70,7 +68,6 @@ class _PostWidgetState extends State<PostWidget> {
 
   getComments() async {
     comments = await _postService.getComments(postId: widget.postid);
-    // print(comments);
     setState(() {});
   }
 
@@ -96,15 +93,13 @@ class _PostWidgetState extends State<PostWidget> {
         future: _postService.getUserDetails(widget.user),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            // print(snapshot.data);
-            return Container(
+            return SizedBox(
               width: double.infinity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
                     onTap: () {
-                      print(snapshot.data?['id']);
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -168,7 +163,7 @@ class _PostWidgetState extends State<PostWidget> {
                                   )
                                 : ButtonStyle(
                                     backgroundColor: MaterialStateProperty.all(
-                                        Color(0xff40D463)),
+                                        const Color(0xff40D463)),
                                     side: MaterialStateProperty.all(
                                         const BorderSide(
                                             color: Color(0xff40D463))),
@@ -269,9 +264,7 @@ class _PostWidgetState extends State<PostWidget> {
                             _postService.likePost(
                                 userId: userId, postId: widget.postid);
                           }
-                          // _store.getLikes(widget.postid);
                           setState(() {
-                            // print(_isLiked);
                             if (!_isLiked) {
                               _isLiked = true;
                               likeCounts++;
@@ -289,15 +282,13 @@ class _PostWidgetState extends State<PostWidget> {
                       GestureDetector(
                           onTap: () {
                             showModalBottomSheet(
-                                // isScrollControlled: true,
                                 context: context,
                                 builder: (context) {
                                   return Container(
                                     width: double.infinity,
-                                    // height: 200,
                                     color: Colors.white,
                                     child: Padding(
-                                      padding: EdgeInsets.all(20.0),
+                                      padding: const EdgeInsets.all(20.0),
                                       child: Column(
                                         children: [
                                           const Text(
@@ -310,7 +301,6 @@ class _PostWidgetState extends State<PostWidget> {
                                                 .getLikedUsers(widget.postid),
                                             builder: (context,
                                                 AsyncSnapshot<List> snapshot) {
-                                              // print(snapshot.data);
                                               if (snapshot.hasData) {
                                                 return ListView.builder(
                                                   shrinkWrap: true,
@@ -358,7 +348,6 @@ class _PostWidgetState extends State<PostWidget> {
                       const SizedBox(width: 15),
                       IconButton(
                         onPressed: () {
-                          // print(comments);
                           showModalBottomSheet(
                             useSafeArea: true,
                             isScrollControlled: true,
@@ -371,7 +360,6 @@ class _PostWidgetState extends State<PostWidget> {
                                 child: StatefulBuilder(
                                     builder: (context, setStateForBuilder) {
                                   return Container(
-                                    // height: double.infinity,
                                     width: double.infinity,
                                     color: Colors.white,
                                     child: Padding(
@@ -465,7 +453,6 @@ class _PostWidgetState extends State<PostWidget> {
                                                                         commentMessage);
                                                             setStateForBuilder(
                                                                 () {
-                                                              print(commentId);
                                                               commentsCount++;
                                                               comments.add({
                                                                 'userId':
